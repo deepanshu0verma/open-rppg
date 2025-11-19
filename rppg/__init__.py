@@ -1,5 +1,5 @@
 import os
-os.dup2(os.open(os.devnull, os.O_WRONLY), 2)
+#os.dup2(os.open(os.devnull, os.O_WRONLY), 2)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from .main import Model 

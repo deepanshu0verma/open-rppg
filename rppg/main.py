@@ -430,11 +430,12 @@ class Model:
         self.input = meta['input'] 
         self.face_mode = 'Near'
         self.face_detection_thread = max(os.cpu_count()//2, 1)
-        self.face_detect_per_n = 1
+        self.face_detect_per_n = 5
         self.call = func 
         self.run = None 
         self.frame = None 
         self.alive = False
+        self.frame_buffer_size = 10
         self.preview_lock = threading.Lock()
         self.preview_lock.acquire()
     
@@ -453,9 +454,10 @@ class Model:
         self.statistic = {'frames':0, 'key':0, 'skipped':0, 'filled':0, 'dependent':0, 'null':0}
         self.sp = threading.Semaphore(0)
         self.frame_lock = threading.Lock()
-        self.face_detection_semaphore = threading.Semaphore(self.face_detection_thread)
+        self.face_detection_semaphore = threading.Semaphore(self.face_detection_thread+self.frame_buffer_size)
         self.face_detection_pool = ThreadPoolExecutor(max_workers=self.face_detection_thread)
         self.face_detection_chain_lock = None
+        self.face_detection_chain_ts = 0
         self.face_detect_count = 0
         if self.face_mode == 'Near':
             self.detector = FaceDetector(pkg_resources.resource_filename('rppg','weights/blaze_face.onnx'))
@@ -489,7 +491,6 @@ class Model:
                     r, _ = self.call(ipt, self.state)
                     r = {k:v*msk for k,v in r.items() if v.shape[-1]==len(msk)}
                     self.n_signal += len(self.face_buff)
-                    #self.signal_buff.append({k:v[:len(self.face_buff)] for k,v in r.items()})
                     for k, v in self.signal_buff.items():
                         v.extend(r[k][:len(self.face_buff)])
                     self.face_buff.clear()
@@ -523,13 +524,15 @@ class Model:
             return {}, None
         if not start<=end:
             raise ValueError('Start must be less than end')
-        #signals = {k:np.concatenate([i[k] for i in self.signal_buff]) for k in self.signal_buff[0]}
         signals = self.signal_buff
         start_n, end_n = 0, None
-        for n, i in enumerate(np.array(self.ts)-self.ts[0]):
+        for n, i in enumerate(self.ts[::-1]):
+            i -= self.ts[0]
+            n = len(self.ts)-n-1
             if start and i<start:
                 start_n = n 
-            if end and i<=end:
+                break 
+            if end and i<=end and not end_n: 
                 end_n = n+1
         signals = {k:v[start_n:end_n] for k,v in signals.items()}
         ts = np.array(self.ts[start_n:end_n])
@@ -627,9 +630,11 @@ class Model:
                     r = 'skipped'
                 if lock1 is not None:
                     lock1.acquire()
+                dt = ts - self.face_detection_chain_ts
+                self.face_detection_chain_ts = ts
                 lock2.release()
                 self.face_detection_semaphore.release()
-                self.__update_frame_box(img, ts, r)
+                self.__update_frame_box(img, ts, r, dt)
             except:
                 import sys
                 sys.excepthook(*sys.exc_info())
@@ -641,7 +646,7 @@ class Model:
         self.face_detection_pool.submit(lambda:detect(self.face_detect_count, frame, lock1, lock2, ts))
         self.face_detect_count += 1
         
-    def __update_frame_box(self, frame, ts=None, box=np.array([])):
+    def __update_frame_box(self, frame, ts=None, box=np.array([]), dt=1/30):
         self.frame = frame
         if not isinstance(box, str):
             if len(box):
@@ -653,7 +658,6 @@ class Model:
                 if self.boxkf is None:
                     kbox, self.boxkf = box, [KalmanFilter1D(0.01,0.5,i,1) for i in box.reshape(-1)]
                 else:
-                    dt = ts-self.ts[-1] if self.ts else None
                     kbox = np.array([round(k.update(i, dt)) for k, i in zip(self.boxkf, box.reshape(-1))]).reshape((2,2))
                 self.rbox = box
                 if self.box is None or max(np.abs((np.mean(kbox, axis=1)-np.mean(self.box, axis=1)))/np.mean(self.box, axis=0))>0.02:
@@ -729,7 +733,7 @@ class Model:
         return self.hr()
     
     def process_video(self, vid_path):
-        container = av.open(vid_path, options={"hwaccel": "cuda"})
+        container = av.open(vid_path)
         stream = container.streams.video[0]
         stream.thread_type = 'AUTO'
         tsarr = []
