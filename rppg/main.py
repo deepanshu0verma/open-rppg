@@ -160,7 +160,10 @@ class KalmanFilter1D:
 
 class FaceDetector:
     def __init__(self, model_path, score_threshold=0.5, iou_threshold=0.3):
-        self.session = ort.InferenceSession(model_path)
+        options = ort.SessionOptions()
+        options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        options.intra_op_num_threads = 1
+        self.session = ort.InferenceSession(model_path, options)
         self.input_name = self.session.get_inputs()[0].name
         self.output_names = [output.name for output in self.session.get_outputs()]
         
@@ -535,7 +538,7 @@ class Model:
             raise ValueError('Start must be less than end')
         signals = self.signal_buff
         start_n, end_n = 0, None
-        for n, i in enumerate(self.ts[::-1]):
+        for n, i in enumerate(reversed(self.ts)):
             i -= self.ts[0]
             n = len(self.ts)-n-1
             if start and i<start:
@@ -587,13 +590,15 @@ class Model:
             bvp = self.process_bvp(bvp)
         return bvp, ts
         
-    def hr(self, start=0, end=None):
+    def hr(self, start=0, end=None, return_hrv=True):
         if self.has_signal:
             bvp, ts = self.bvp(start, end)
             try:
-                hrv = get_prv(bvp, ts, self.fps)
-                hr  = get_hr(bvp, self.fps)
                 sqi = SQI(bvp)
+                hrv = {}
+                if return_hrv and sqi>0.5:
+                    hrv = get_prv(bvp, ts, self.fps)
+                hr  = get_hr(bvp, self.fps)
             except:
                 hr, sqi, hrv = None, None, {}
             return {'hr':hr, 'SQI':sqi, 'hrv':hrv, 'latency':self.latency}
