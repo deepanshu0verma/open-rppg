@@ -695,6 +695,9 @@ class Model:
                 self.rbox = box
                 if self.box is None or max(np.abs((np.mean(kbox, axis=1)-np.mean(self.box, axis=1)))/np.mean(self.box, axis=0))>0.02:
                     self.box = kbox
+        else:
+            if self.boxkf is not None:
+                kbox = np.array([round(k.update(i, dt)) for k, i in zip(self.boxkf, self.rbox.reshape(-1))]).reshape((2,2))
         return self.box
     
     def __update_frame_box(self, frame, ts=None, box=np.array([]), dt=1/30):
