@@ -1,0 +1,27 @@
+--- Prototype Started ---
+Video: test_video.mp4 | FPS: 30.00 | Total Frames: 1786
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 1 | BPM: 55.6 | RR: 0.0 | Latency: 1.39s | Quality: 0.14
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 2 | BPM: 77.3 | RR: 0.0 | Latency: 1.23s | Quality: 0.20
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 3 | BPM: 81.9 | RR: 0.0 | Latency: 0.93s | Quality: 0.28
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 4 | BPM: 84.6 | RR: 0.0 | Latency: 1.29s | Quality: 0.45
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 5 | BPM: 78.7 | RR: 0.0 | Latency: 1.27s | Quality: 0.07
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 6 | BPM: 91.3 | RR: 0.0 | Latency: 1.00s | Quality: 0.63
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 7 | BPM: 93.8 | RR: 0.0 | Latency: 0.82s | Quality: 0.24
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 8 | BPM: 83.4 | RR: 0.0 | Latency: 0.78s | Quality: 0.45
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 9 | BPM: 74.9 | RR: 0.0 | Latency: 0.76s | Quality: 0.45
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 10 | BPM: 88.8 | RR: 0.0 | Latency: 0.85s | Quality: 0.42
+OPEN-RPPG:WARNING - Tensor mode, video quality check disabled.
+Chunk 11 | BPM: 88.0 | RR: 0.0 | Latency: 0.75s | Quality: 0.16
+
+--- FINAL ESTIMATION ---
+Full 60s BPM Estimate: 81.66

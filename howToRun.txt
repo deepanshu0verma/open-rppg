@@ -1,0 +1,26 @@
+RUNNING THE PROJECT: STEP-BY-STEP
+==================================
+
+1. INITIAL SETUP (If not already done):
+   - Open your terminal in the 'open-rppg' folder.
+   - Run: python3 -m venv venv
+   - Run: source venv/bin/activate
+   - Run: pip install -r requirements.txt
+
+2. USING THE HELPER SCRIPT:
+   - Make the helper executable:
+     chmod +x run_project.sh
+   - Run the full pipeline:
+     ./run_project.sh
+
+3. MANUAL EXECUTION (Individual Steps):
+   A. Activate environment:
+      source venv/bin/activate
+   B. Record 60s video (Sit still!):
+      python3 record_video.py
+   C. Run Analysis:
+      python3 prototype.py
+
+4. VERIFYING OUTPUT:
+   - Ensure 'test_video.mp4' is created and has a file size > 0.
+   - Look for 'Chunk' logs in the terminal for real-time BPM updates.
